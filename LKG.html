@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LinKeyGenerator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+            color: #333;
+        }
+        h1 {
+            margin-top: 0;
+            text-align: center;
+            color: #007bff;
+        }
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: auto; /* Aggiunto overflow per gestire il flusso del contenuto */
+        }
+        input[type="text"] {
+            padding: 8px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            width: calc(100% - 22px);
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background-color: #007bff;
+            color: #fff;
+            cursor: pointer;
+            margin-top: 10px;
+            width: 100%;
+            display: block;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        p {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .warning {
+            background-color: #ffcccb;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>LinKeyGenerator</h1>
+        <h2>Inserisci il link qui:</h2>
+        <input type="text" id="linkInput" placeholder="Inserisci il link...">
+        <button onclick="aggiungiKey()">Aggiungi Key</button>
+
+        <h2>Link con Key:</h2>
+        <p id="linkConKey"></p>
+
+        <button onclick="downloadM3U()">Download M3U</button>
+    </div>
+
+    <div class="warning">
+        Attenzione: Questa pagina funziona solo con i link di streaming community.
+    </div>
+
+    <script>
+        function aggiungiKey() {
+            var linkInput = document.getElementById("linkInput").value;
+            var linkConKey = linkInput + "&key=https://vixcloud.co/storage/enc.key";
+            document.getElementById("linkConKey").innerHTML = '<a href="' + linkConKey + '">' + linkConKey + '</a>';
+        }
+
+        function downloadM3U() {
+            const linkInput = document.getElementById("linkInput").value;
+            const key = "https://vixcloud.co/storage/enc.key";
+            const fileName = extractFileName(linkInput);
+            const m3uContent = `#EXT-X-KEY:METHOD=AES-128,URI="${key}",IV=0x43A6D967D5C17290D98322F5C8F6660B\n${linkInput}&key=${key}`;
+
+            const blob = new Blob([m3uContent], { type: "text/plain" });
+            const linkElement = document.createElement("a");
+            linkElement.href = URL.createObjectURL(blob);
+            linkElement.download = `${fileName}.m3u`;
+            linkElement.click();
+        }
+
+        function extractFileName(url) {
+            const pathArray = url.split('/');
+            const lastSegment = pathArray[pathArray.length - 1];
+            const fileName = lastSegment.split('?')[0]; // Rimuove eventuali parametri GET
+            return fileName;
+        }
+    </script>
+</body>
+</html>
