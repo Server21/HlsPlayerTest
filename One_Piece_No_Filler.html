@@ -1,0 +1,591 @@
+<html lang="it"><head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>One Piece No Filler</title>
+  <style>
+    /* Reset e impostazioni base globali */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: #141414;
+      overflow: hidden;
+      font-family: "Helvetica Neue", Arial, sans-serif;
+      color: #fff;
+    }
+    /* Contenitore principale */
+    #playerContainer {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #000;
+    }
+    /* Header trasparente: contiene titolo e controlli */
+    #header {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px 40px;
+      background: transparent;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+    #header h1 {
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.7);
+      margin-bottom: 10px;
+    }
+    #episodeIndicator {
+      font-size: 18px;
+      color: #e0e0e0;
+      margin-left: 15px;
+    }
+    /* Controlli: posizionati accanto al titolo */
+    #controlsContainer {
+      display: flex;
+      gap: 15px;
+      background: rgba(20,20,20,0.7);
+      padding: 10px 20px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+    }
+    #controlsContainer button {
+      padding: 8px 18px;
+      font-size: 15px;
+      border: none;
+      border-radius: 4px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+    #controlsContainer button:hover {
+      background: rgba(255,255,255,0.3);
+    }
+    #controlsContainer button:disabled {
+      background: rgba(255,255,255,0.1);
+      color: #888;
+      cursor: not-allowed;
+    }
+    /* Video */
+    video {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      background: #000;
+      z-index: 1;
+    }
+    /* Selezione Episodi */
+    #episodeSelection {
+      position: absolute;
+      top: 80px;
+      right: 20px;
+      display: none;
+      padding: 20px;
+      background: linear-gradient(135deg, #2b2b2b, #444);
+      border: 1px solid #666;
+      border-radius: 12px;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+      color: #fff;
+      max-height: calc(100vh - 160px);
+      overflow-y: auto;
+      z-index: 11;
+    }
+    #episodeSelection button {
+      font-family: inherit;
+    }
+    /* Bottoni range e grid moderni */
+    #rangeSelection {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    #rangeSelection button {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      color: #fff;
+      transition: background 0.3s, transform 0.2s;
+    }
+    #rangeSelection button:hover {
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
+    }
+    #rangeSelection button.active-range {
+      background: #007bff;
+      font-weight: bold;
+    }
+    #episodeGrid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    #episodeGrid button {
+      background: rgba(255,255,255,0.15);
+      border: none;
+      border-radius: 8px;
+      padding: 10px 15px;
+      margin: 5px;
+      font-size: 16px;
+      color: #fff;
+      transition: background 0.3s, transform 0.2s;
+      min-width: 50px;
+    }
+    #episodeGrid button:hover {
+      background: rgba(255,255,255,0.25);
+      transform: scale(1.05);
+    }
+    #episodeGrid button.active {
+      background: #dc3545;
+      font-weight: bold;
+    }
+    /* Responsive per dispositivi */
+    @media (max-width: 768px) {
+      #header {
+        padding: 15px 25px;
+      }
+      #header h1 {
+        font-size: 20px;
+      }
+      #episodeIndicator {
+        font-size: 16px;
+      }
+      #controlsContainer {
+        gap: 10px;
+        padding: 8px 15px;
+      }
+      #controlsContainer button {
+        padding: 8px 14px;
+        font-size: 14px;
+      }
+      #episodeSelection {
+        top: 70px;
+        right: 15px;
+        padding: 15px;
+        max-height: calc(100vh - 140px);
+      }
+      #rangeSelection button, 
+      #episodeGrid button {
+        font-size: 14px;
+        padding: 8px 12px;
+      }
+    }
+    @media (max-width: 480px) {
+      #header {
+        padding: 10px 15px;
+      }
+      #header h1 {
+        font-size: 18px;
+      }
+      #episodeIndicator {
+        display: none;
+      }
+      #controlsContainer {
+        gap: 8px;
+        padding: 6px 10px;
+      }
+      #controlsContainer button {
+        padding: 6px 10px;
+        font-size: 12px;
+      }
+      #episodeSelection {
+        top: 60px;
+        right: 10px;
+        left: 10px;
+        padding: 10px;
+        max-height: calc(100vh - 120px);
+      }
+      #rangeSelection button, 
+      #episodeGrid button {
+        font-size: 12px;
+        padding: 6px 8px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="playerContainer">
+    <!-- Header trasparente contenente titolo e controlli -->
+    <div id="header">
+      <div>
+        <h1>
+          One Piece No Filler
+          <span id="episodeIndicator"> - Episodio 22</span>
+        </h1>
+      </div>
+      <div id="controlsContainer">
+        <button id="prevBtn" title="Episodio Precedente">◄</button>
+        <button id="togglePlaylistBtn" title="Mostra/Nascondi Episodi">☰ Episodi</button>
+        <button id="nextBtn" title="Episodio Successivo">►</button>
+        
+      </div>
+    </div>
+    <!-- Video (autoplay e preload per facilitare l'automazione, rimosso muted) -->
+    <video id="videoPlayer" controls="" autoplay="" preload="metadata" src="https://srv14-yuzu.sweetpixel.org/DDL/ANIME/OnePieceITA/OnePiece_Ep_022_ITA.mp4">
+      Il tuo browser non supporta il tag video.
+    </video>
+    <!-- Selezione Episodi -->
+    <div id="episodeSelection" style="display: none;">
+      <div id="rangeSelection"><button data-range-index="0" class="active-range">1-50</button><button data-range-index="1">51-108</button><button data-range-index="2">109-171</button><button data-range-index="3">172-241</button><button data-range-index="4">242-291</button><button data-range-index="5">292-351</button><button data-range-index="6">352-404</button><button data-range-index="7">405-458</button><button data-range-index="8">459-508</button><button data-range-index="9">509-558</button><button data-range-index="10">559-612</button><button data-range-index="11">613-665</button><button data-range-index="12">666-715</button><button data-range-index="13">716-759</button></div>
+      <div id="episodeGrid"><button title="Episode 1" data-playlist-index="0">1</button><button title="Episode 2" data-playlist-index="1">2</button><button title="Episode 3" data-playlist-index="2">3</button><button title="Episode 4" data-playlist-index="3">4</button><button title="Episode 5" data-playlist-index="4">5</button><button title="Episode 6" data-playlist-index="5">6</button><button title="Episode 7" data-playlist-index="6">7</button><button title="Episode 8" data-playlist-index="7">8</button><button title="Episode 9" data-playlist-index="8">9</button><button title="Episode 10" data-playlist-index="9">10</button><button title="Episode 11" data-playlist-index="10">11</button><button title="Episode 12" data-playlist-index="11">12</button><button title="Episode 13" data-playlist-index="12">13</button><button title="Episode 14" data-playlist-index="13">14</button><button title="Episode 15" data-playlist-index="14">15</button><button title="Episode 16" data-playlist-index="15">16</button><button title="Episode 17" data-playlist-index="16">17</button><button title="Episode 18" data-playlist-index="17">18</button><button title="Episode 19" data-playlist-index="18">19</button><button title="Episode 20" data-playlist-index="19">20</button><button title="Episode 21" data-playlist-index="20">21</button><button title="Episode 22" data-playlist-index="21" class="active">22</button><button title="Episode 23" data-playlist-index="22">23</button><button title="Episode 24" data-playlist-index="23">24</button><button title="Episode 25" data-playlist-index="24">25</button><button title="Episode 26" data-playlist-index="25">26</button><button title="Episode 27" data-playlist-index="26">27</button><button title="Episode 28" data-playlist-index="27">28</button><button title="Episode 29" data-playlist-index="28">29</button><button title="Episode 30" data-playlist-index="29">30</button><button title="Episode 31" data-playlist-index="30">31</button><button title="Episode 32" data-playlist-index="31">32</button><button title="Episode 33" data-playlist-index="32">33</button><button title="Episode 34" data-playlist-index="33">34</button><button title="Episode 35" data-playlist-index="34">35</button><button title="Episode 36" data-playlist-index="35">36</button><button title="Episode 37" data-playlist-index="36">37</button><button title="Episode 38" data-playlist-index="37">38</button><button title="Episode 39" data-playlist-index="38">39</button><button title="Episode 40" data-playlist-index="39">40</button><button title="Episode 41" data-playlist-index="40">41</button><button title="Episode 42" data-playlist-index="41">42</button><button title="Episode 43" data-playlist-index="42">43</button><button title="Episode 44" data-playlist-index="43">44</button><button title="Episode 45" data-playlist-index="44">45</button><button title="Episode 46" data-playlist-index="45">46</button><button title="Episode 47" data-playlist-index="46">47</button><button title="Episode 48" data-playlist-index="47">48</button><button title="Episode 49" data-playlist-index="48">49</button><button title="Episode 50" data-playlist-index="49">50</button></div>
+    </div>
+  </div>
+
+  <script>
+    "use strict";
+    /* Riferimenti agli elementi */
+    const videoPlayer = document.getElementById('videoPlayer');
+    const episodeIndicator = document.getElementById('episodeIndicator');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const togglePlaylistBtn = document.getElementById('togglePlaylistBtn');
+    const episodeSelection = document.getElementById('episodeSelection');
+    const rangeSelection = document.getElementById('rangeSelection');
+    const episodeGrid = document.getElementById('episodeGrid');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const playerContainer = document.getElementById('playerContainer');
+
+    const playlistUrl = 'https://files.catbox.moe/y0pwtc.m3u';
+    let playlist = [];
+    let currentVideoIndex = -1;
+    let currentRangeIndex = 0;
+    const rangeStep = 50;
+    const introSkipTime = 111;
+    const outroStartTime = 1373;
+
+    function isFiller(ep) {
+      const fillerRanges = [
+        [54, 61], [131, 135], [136, 138], [139, 143], [196, 206],
+        [220, 224], [225, 228], [326, 335], [382, 384], [426, 429],
+        [575, 578], [626, 628], [747, 750], [780, 782], [895, 896],
+        [1029, 1030]
+      ];
+      return fillerRanges.some(range => ep >= range[0] && ep <= range[1]);
+    }
+
+    function loadPlaylist() {
+      fetch(playlistUrl)
+        .then(response => {
+          if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+          return response.text();
+        })
+        .then(text => {
+          parseM3U(text);
+          if (playlist.length > 0) {
+              generateRangeSelection();
+              updateRangeSelection();
+              populateEpisodeGrid();
+              loadVideo(0);
+          } else {
+              console.error("Nessun episodio valido trovato nella playlist.");
+              episodeIndicator.textContent = " - Playlist vuota o errore";
+          }
+        })
+        .catch(error => {
+            console.error("Errore nel caricamento o parsing della playlist:", error);
+            episodeIndicator.textContent = " - Errore caricamento playlist";
+        });
+    }
+
+    function parseM3U(text) {
+      const lines = text.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('#EXTM3U'));
+      let epCounter = 0;
+      playlist = [];
+      for (let i = 0; i < lines.length; i++) {
+        if (lines[i].startsWith('#EXTINF')) {
+          epCounter++;
+          if (!isFiller(epCounter)) {
+              const parts = lines[i].split(',');
+              const title = parts.length > 1 ? parts[1].trim() : `Episodio ${epCounter}`;
+              const url = lines[i + 1] || '';
+              if (url) {
+                 playlist.push({ number: epCounter, title, url });
+              }
+          }
+          i++;
+        }
+      }
+      console.log(`Playlist caricata: ${playlist.length} episodi non-filler trovati.`);
+    }
+
+    function generateRangeSelection() {
+      rangeSelection.innerHTML = "";
+      const total = playlist.length;
+      if (total === 0) return;
+      const rangeCount = Math.ceil(total / rangeStep);
+      for (let i = 0; i < rangeCount; i++) {
+        const startIndex = i * rangeStep;
+        const endIndex = Math.min(total - 1, (i + 1) * rangeStep - 1);
+        if (startIndex >= total) continue;
+        const startNumber = playlist[startIndex].number;
+        const endNumber = playlist[endIndex].number;
+        const btn = document.createElement('button');
+        btn.textContent = `${startNumber}-${endNumber}`;
+        btn.dataset.rangeIndex = i;
+        btn.addEventListener('click', () => {
+          currentRangeIndex = i;
+          updateRangeSelection();
+          populateEpisodeGrid();
+        });
+        rangeSelection.appendChild(btn);
+      }
+    }
+
+    function updateRangeSelection() {
+      const buttons = rangeSelection.querySelectorAll('button');
+      buttons.forEach(btn => {
+        const rangeIndex = parseInt(btn.dataset.rangeIndex, 10);
+        btn.classList.toggle('active-range', rangeIndex === currentRangeIndex);
+      });
+    }
+
+    function populateEpisodeGrid() {
+      episodeGrid.innerHTML = "";
+      const total = playlist.length;
+      if (total === 0) return;
+      const startIndex = currentRangeIndex * rangeStep;
+      const endIndex = Math.min(total, (currentRangeIndex + 1) * rangeStep);
+      for (let i = startIndex; i < endIndex; i++) {
+        if (i >= playlist.length) break;
+        const episode = playlist[i];
+        const btn = document.createElement('button');
+        btn.textContent = episode.number;
+        btn.title = episode.title;
+        btn.dataset.playlistIndex = i;
+        if (i === currentVideoIndex) {
+          btn.classList.add('active');
+        }
+        btn.addEventListener('click', () => {
+          loadVideo(i);
+          // Chiude automaticamente la selezione episodi dopo la scelta
+          episodeSelection.style.display = 'none';
+          togglePlaylistBtn.textContent = '☰ Episodi';
+        });
+        episodeGrid.appendChild(btn);
+      }
+    }
+
+    function updateEpisodeIndicator() {
+      if (currentVideoIndex >= 0 && currentVideoIndex < playlist.length) {
+        episodeIndicator.textContent = ` - Episodio ${playlist[currentVideoIndex].number}`;
+      } else {
+        episodeIndicator.textContent = " - Nessun episodio caricato";
+      }
+    }
+
+    function loadVideo(index) {
+      if (index < 0 || index >= playlist.length) {
+        console.warn(`Indice video non valido: ${index}`);
+        return;
+      }
+      console.log(`Caricamento episodio ${playlist[index].number} (indice ${index})`);
+      currentVideoIndex = index;
+      videoPlayer.src = playlist[index].url;
+      updateEpisodeIndicator();
+      const newRangeIndex = Math.floor(currentVideoIndex / rangeStep);
+      if (newRangeIndex !== currentRangeIndex) {
+        currentRangeIndex = newRangeIndex;
+        updateRangeSelection();
+      }
+      populateEpisodeGrid();
+      prevBtn.disabled = (currentVideoIndex === 0);
+      nextBtn.disabled = (currentVideoIndex === playlist.length - 1);
+    }
+
+    videoPlayer.addEventListener('loadedmetadata', () => {
+      console.log("Metadati caricati, durata:", videoPlayer.duration);
+      if (videoPlayer.duration > introSkipTime && videoPlayer.currentTime < introSkipTime) {
+          console.log("Salto intro...");
+          videoPlayer.currentTime = introSkipTime;
+      }
+      videoPlayer.play().catch(error => {
+          console.error("Errore autoplay:", error);
+      });
+    });
+
+    videoPlayer.addEventListener('timeupdate', () => {
+      // Salto dell'outro
+      if (videoPlayer.duration > outroStartTime && videoPlayer.currentTime >= outroStartTime) {
+        console.log("Rilevato inizio outro, passo al prossimo episodio...");
+        videoPlayer.pause();
+        if (currentVideoIndex < playlist.length - 1) {
+          loadVideo(currentVideoIndex + 1);
+        } else {
+          console.log("Ultimo episodio terminato.");
+        }
+      }
+      // Tentativo di forzare una ricalibrazione della sincronizzazione ogni 10 secondi
+      if (Math.floor(videoPlayer.currentTime) % 10 === 0 && Math.floor(videoPlayer.currentTime) !== 0) {
+        if (!videoPlayer._syncAttempted) {
+          videoPlayer._syncAttempted = true;
+          console.log("Forzo la ricalibrazione del playback...");
+          videoPlayer.currentTime = videoPlayer.currentTime;
+          setTimeout(() => { videoPlayer._syncAttempted = false; }, 1000);
+        }
+      }
+    });
+
+    videoPlayer.addEventListener('ended', () => {
+      console.log("Video terminato, passo al prossimo episodio...");
+      if (currentVideoIndex < playlist.length - 1) {
+        loadVideo(currentVideoIndex + 1);
+      } else {
+         console.log("Playlist terminata.");
+      }
+    });
+
+    prevBtn.addEventListener('click', () => {
+      if (currentVideoIndex > 0) {
+          loadVideo(currentVideoIndex - 1);
+      }
+    });
+    nextBtn.addEventListener('click', () => {
+      if (currentVideoIndex < playlist.length - 1) {
+          loadVideo(currentVideoIndex + 1);
+      }
+    });
+    togglePlaylistBtn.addEventListener('click', () => {
+      const isVisible = episodeSelection.style.display === 'block';
+      episodeSelection.style.display = isVisible ? 'none' : 'block';
+      togglePlaylistBtn.textContent = isVisible ? '☰ Episodi' : '✕ Chiudi';
+      if (!isVisible) {
+          updateRangeSelection();
+          populateEpisodeGrid();
+          setTimeout(() => {
+              const activeButton = episodeGrid.querySelector('button.active');
+              if (activeButton) {
+                  activeButton.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+          }, 100);
+      }
+    });
+
+    // LOGICA FULLSCREEN
+    function toggleFullScreen() {
+      if (!document.fullscreenElement &&
+          !document.webkitFullscreenElement &&
+          !document.mozFullScreenElement &&
+          !document.msFullscreenElement) {
+          console.log("Richiesta entrata in fullscreen...");
+          if (playerContainer.requestFullscreen) {
+              playerContainer.requestFullscreen().catch(err => console.error(`Errore FS: ${err.message}`));
+          } else if (playerContainer.webkitRequestFullscreen) {
+              playerContainer.webkitRequestFullscreen();
+          } else if (playerContainer.mozRequestFullScreen) {
+              playerContainer.mozRequestFullScreen();
+          } else if (playerContainer.msRequestFullscreen) {
+              playerContainer.msRequestFullscreen();
+          }
+      } else {
+          console.log("Richiesta uscita da fullscreen...");
+          if (document.exitFullscreen) {
+              document.exitFullscreen();
+          } else if (document.webkitExitFullscreen) {
+              document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+              document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+              document.msExitFullscreen();
+          }
+      }
+    }
+
+    if (fullscreenBtn) {
+      const fsEnabled = document.fullscreenEnabled || document.webkitFullscreenEnabled || document.mozFullScreenEnabled || document.msFullscreenEnabled;
+      if (fsEnabled) {
+          fullscreenBtn.addEventListener('click', toggleFullScreen);
+      } else {
+          console.warn("API Fullscreen non supportata da questo browser.");
+          fullscreenBtn.title = "Fullscreen non supportato";
+          fullscreenBtn.disabled = true;
+      }
+    } else {
+      console.error("Pulsante Fullscreen non trovato!");
+    }
+
+    function handleFullscreenChange() {
+      const isInFullscreen = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+      console.log("Stato Fullscreen cambiato:", isInFullscreen);
+      if (fullscreenBtn) {
+          fullscreenBtn.textContent = isInFullscreen ? 'Exit ⛶' : '⛶';
+          fullscreenBtn.title = isInFullscreen ? 'Esci da Schermo Intero' : 'Schermo Intero';
+      }
+    }
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+    document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+    // TENTATIVO DI AUTO FULLSCREEN (ricorda che molti browser bloccano l'azione senza interazione)
+    window.addEventListener('load', () => {
+      loadPlaylist();
+      setTimeout(() => {
+        if (playerContainer.requestFullscreen) {
+          playerContainer.requestFullscreen().catch(err => console.error(`Errore FS: ${err.message}`));
+        } else if (playerContainer.webkitRequestFullscreen) {
+          playerContainer.webkitRequestFullscreen();
+        } else if (playerContainer.mozRequestFullScreen) {
+          playerContainer.mozRequestFullScreen();
+        } else if (playerContainer.msRequestFullscreen) {
+          playerContainer.msRequestFullscreen();
+        }
+      }, 500);
+    });
+
+    // --- INTEGRAZIONE PER live.bilibili.com ---
+    var selector = {
+      'live.bilibili.com': {
+        'on': "i[class='fullscreenBtn']"
+      }
+    };
+    var domain = document.location.hostname;
+    function openFullScreen() {
+      var _click = document.querySelector(selector[domain].on);
+      if (_click !== null) {
+        _click.click();
+      }
+    }
+    function waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelector) {
+      var targetNodes, btargetsFound;
+      if (typeof iframeSelector === "undefined")
+        targetNodes = document.querySelectorAll(selectorTxt);
+      else
+        targetNodes = document.querySelectorAll(iframeSelector + " " + selectorTxt);
+      if (targetNodes && targetNodes.length > 0) {
+        btargetsFound = true;
+        targetNodes.forEach(function (node) {
+          var alreadyFound = node.dataset.found || false;
+          if (!alreadyFound) {
+            actionFunction(node);
+            node.dataset.found = true;
+          }
+        });
+      } else {
+        btargetsFound = false;
+      }
+      if (!btargetsFound || !bWaitOnce) {
+        setTimeout(function () {
+          waitForKeyElements(selectorTxt, actionFunction, bWaitOnce, iframeSelector);
+        }, 300);
+      }
+    }
+    waitForKeyElements(selector[domain].on, openFullScreen, false);
+  </script>
+
+</body></html>
